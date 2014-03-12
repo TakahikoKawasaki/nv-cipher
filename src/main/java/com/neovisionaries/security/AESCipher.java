@@ -30,7 +30,7 @@ import org.apache.commons.codec.binary.Base64;
  *
  * <pre style="background-color: #EEEEEE; margin-left: 2em; margin-right: 2em; border: 1px solid black; padding: 0.5em;">
  * <span style="color: darkgreen;">// Create a cipher with a secret key.</span>
- * AESCipher cipher = new {@link #AESCipher()}.{@link #setKey}(<span style="color: darkred;">"password"</span>);
+ * AESCipher cipher = new {@link #AESCipher()}.{@link #setKey(String) setKey}(<span style="color: darkred;">"password"</span>);
  *
  * <span style="color: darkgreen;">// Encryption &amp; decryption.
  * // 'plaintext' and 'decrypted' have the same value.</span>
@@ -86,14 +86,14 @@ public class AESCipher extends CodecCipher
      * </p>
      *
      * @param encoder
-     *         An encoder used in {@link #encrypt(String)} and
-     *         {@link #encrypt(byte[])} to encode an encrypted byte array.
+     *         An encoder used in {@link #encrypt(String) encrypt(String)} and
+     *         {@link #encrypt(byte[]) encrypt(byte[])} to encode an encrypted byte array.
      *         If {@code null} is given, {@link Base64} is used as the default
      *         encoder.
      *
      * @param decoder
-     *         A decoder used in {@link #decrypt(String)} and
-     *         {@link #decrypt(byte[])} to decode an encoded input byte array.
+     *         A decoder used in {@link #decrypt(String) decrypt(String)} and
+     *         {@link #decrypt(byte[]) decrypt(byte[])} to decode an encoded input byte array.
      *         If {@code null} is given, {@link Base64} is used as the default
      *         decoder.
      */
