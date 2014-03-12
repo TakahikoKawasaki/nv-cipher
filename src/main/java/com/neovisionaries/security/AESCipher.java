@@ -30,7 +30,7 @@ import org.apache.commons.codec.binary.Base64;
  *
  * <pre style="background-color: #EEEEEE; margin-left: 2em; margin-right: 2em; border: 1px solid black; padding: 0.5em;">
  * <span style="color: darkgreen;">// Create a cipher with a secret key.</span>
- * AESCipher cipher = new {@link #AESCipher()}.{@link #setKey(String) setKey}(<span style="color: darkred;">"password"</span>);
+ * AESCipher cipher = new {@link #AESCipher()}.{@link #setKey(String, String) setKey}(<span style="color: darkred;">"secret key"</span>, <span style="color: darkred;">"initial vector"</span>);
  *
  * <span style="color: darkgreen;">// Encryption &amp; decryption.
  * // 'plaintext' and 'decrypted' have the same value.</span>

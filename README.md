@@ -35,7 +35,7 @@ Example
 
 ```java
 // Create a cipher with a secret key.
-AESCipher cipher = new AESCipher().setKey("password");
+AESCipher cipher = new AESCipher().setKey("secret key", "initial vector");
 
 // Encryption & decryption.
 // 'plaintext' and 'decrypted' have the same value.
@@ -69,7 +69,7 @@ Maven
 <dependency>
     <groupId>com.neovisionaries</groupId>
     <artifactId>nv-cipher</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 </dependency>
 ```
 
