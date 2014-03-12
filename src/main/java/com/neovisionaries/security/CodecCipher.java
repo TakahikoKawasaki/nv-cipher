@@ -16,7 +16,6 @@
 package com.neovisionaries.security;
 
 
-import java.io.UnsupportedEncodingException;
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -1066,13 +1065,13 @@ public class CodecCipher
         }
 
         // Convert the input string into a byte array.
-        byte[] inputBytes = getBytesUTF8(input);
+        byte[] inputBytes = Utils.getBytesUTF8(input);
 
         // Encrypt or decrypt.
         byte[] outputBytes = cipher(inputBytes, mode);
 
         // Build a string from the byte array.
-        return toStringUTF8(outputBytes);
+        return Utils.toStringUTF8(outputBytes);
     }
 
 
@@ -1219,52 +1218,6 @@ public class CodecCipher
         else
         {
             return DEFAULT_CODER.decode(input);
-        }
-    }
-
-
-    /**
-     * Get bytes by {@code input.getBytes("UTF-8")}.
-     */
-    static byte[] getBytesUTF8(String input)
-    {
-        if (input == null)
-        {
-            return null;
-        }
-
-        try
-        {
-            // Use getBytes(String).
-            // getBytes(Charset) is not available in Java 1.5.
-            return input.getBytes("UTF-8");
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            // This won't happen.
-            return null;
-        }
-    }
-
-
-    /**
-     * Build a {@code String} instance by {@code new String(input, "UTF-8")}.
-     */
-    static String toStringUTF8(byte[] input)
-    {
-        if (input == null)
-        {
-            return null;
-        }
-
-        try
-        {
-            return new String(input, "UTF-8");
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            // This won't happen.
-            return null;
         }
     }
 }

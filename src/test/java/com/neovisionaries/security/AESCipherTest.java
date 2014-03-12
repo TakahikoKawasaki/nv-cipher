@@ -18,8 +18,12 @@ package com.neovisionaries.security;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import org.apache.commons.codec.BinaryDecoder;
+import org.apache.commons.codec.BinaryEncoder;
 import org.apache.commons.codec.binary.BinaryCodec;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.net.QuotedPrintableCodec;
+import org.apache.commons.codec.net.URLCodec;
 import org.junit.Test;
 
 
@@ -30,42 +34,91 @@ import org.junit.Test;
  */
 public class AESCipherTest
 {
-    private void doTest(AESCipher cipher)
+    private static final boolean DEBUG = false;
+
+
+    private <TCoder extends BinaryEncoder & BinaryDecoder> void doTest(String plain, String key, String iv, TCoder coder)
     {
-        doTest(cipher, "abcdefghijklmnopqrstuvwxyz");
-    }
+        AESCipher cipher = new AESCipher();
 
+        if (coder != null)
+        {
+            cipher.setCoder(coder);
+        }
 
-    private void doTest(AESCipher cipher, String input)
-    {
-        String encrypted = cipher.encrypt(input);
-        assertNotEquals(input, encrypted);
+        cipher.setKey(key, iv);
 
+        // Encrypt.
+        String encrypted = cipher.encrypt(plain);
+
+        if (iv == null)
+        {
+            byte[] iv2 = cipher.getCipher().getIV();
+            cipher.setKey(key, iv2);
+        }
+
+        // Decrypt.
         String decrypted = cipher.decrypt(encrypted);
-        assertEquals(input, decrypted);
+
+        if (DEBUG)
+        {
+            System.out.println("----------");
+            System.out.println("codec     = " + ((coder != null) ? coder.getClass().getSimpleName() : "default"));
+            System.out.println("plain     = " + plain);
+            System.out.println("encrypted = " + encrypted);
+            System.out.println("decrypted = " + decrypted);
+        }
+
+        assertNotEquals(plain, encrypted);
+        assertEquals(plain, decrypted);
     }
 
 
     @Test
     public void test1()
     {
-        AESCipher cipher = new AESCipher().setKey("abcdefg");
-        doTest(cipher);
+        doTest("hello", "key", "iv", null);
     }
 
 
     @Test
     public void test2()
     {
-        AESCipher cipher = new AESCipher(new Hex()).setKey("12345678901234567890");
-        doTest(cipher);
+        doTest("hello", "1234567890123456", "1234567890123456", new Hex());
     }
 
 
     @Test
     public void test3()
     {
-        AESCipher cipher = new AESCipher(new BinaryCodec()).setKey("abcdefg", "123456");
-        doTest(cipher);
+        doTest("hello", "12345678901234567890", "12345678901234567890", new BinaryCodec());
+    }
+
+
+    @Test
+    public void test4()
+    {
+        doTest("hello", "key", null, new URLCodec());
+    }
+
+
+    @Test
+    public void test5()
+    {
+        doTest("hello", "1234567890123456", null, new QuotedPrintableCodec());
+    }
+
+
+    @Test
+    public void test6()
+    {
+        doTest("hello", "12345678901234567890", null, null);
+    }
+
+
+    @Test
+    public void test7()
+    {
+        doTest("hello", null, null, null);
     }
 }

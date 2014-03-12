@@ -19,7 +19,6 @@ package com.neovisionaries.security;
 import static com.neovisionaries.security.StandardCipherTransformations.AES_CBC_PKCS5PADDING;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.BinaryDecoder;
 import org.apache.commons.codec.BinaryEncoder;
 import org.apache.commons.codec.binary.Base64;
@@ -28,7 +27,7 @@ import org.apache.commons.codec.binary.Base64;
 /**
  * Cipher using {@code "AES/CBC/PKCS5Padding"}.
  *
- * <pre style="background-color: #EEEEEE; margin-left: 2em; margin-right: 2em; border: 1px solid black; padding: 0.5em;">
+ * <pre style="background-color: #EEEEEE; margin: 2em; border: 1px solid black; padding: 0.5em;">
  * <span style="color: darkgreen;">// Create a cipher with a secret key.</span>
  * AESCipher cipher = new {@link #AESCipher()}.{@link #setKey(String, String) setKey}(<span style="color: darkred;">"secret key"</span>, <span style="color: darkred;">"initial vector"</span>);
  *
@@ -54,6 +53,27 @@ import org.apache.commons.codec.binary.Base64;
  * <span style="color: darkgreen;">// If you want, an encoder and a decoder can be set separately.</span>
  * cipher.{@link #setEncoder(BinaryEncoder) setEncoder(hex)};
  * cipher.{@link #setDecoder(BinaryDecoder) setDecoder(hex)};
+ * </pre>
+ *
+ * <pre style="background-color: #EEEEEE; margin: 2em; border: 1px solid black; padding: 0.5em;">
+ * <span style="color: darkgreen;">// Another example which performs encryption without initial vector.</span>
+ * String secretkey = <span style="color: darkred;">"secret key"</span>;
+ * String plaintext = <span style="color: darkred;">"plain text"</span>;
+ *
+ * <span style="color: darkgreen;">// Create and set up without initial vector.</span>
+ * AESCipher cipher = new AESCipher().setKey(secretkey);
+ *
+ * <span style="color: darkgreen;">// Encrypt.</span>
+ * String encrypted = cipher.encrypt(plaintext);
+ *
+ * <span style="color: darkgreen;">// Get the auto-generated initial vector.</span>
+ * byte[] iv = cipher.getCipher().getIV();
+ *
+ * <span style="color: darkgreen;">// Decryption requires initial vector.</span>
+ * cipher.setKey(secretkey, iv);
+ *
+ * <span style="color: darkgreen;">// Decrypt.</span>
+ * String decrypted = cipher.decrypt(encrypted);
  * </pre>
  *
  * @author Takahiko Kawasaki
@@ -148,7 +168,8 @@ public class AESCipher extends CodecCipher
 
 
     /**
-     * Set cipher initialization parameters.
+     * Set cipher initialization parameters. Other {@code setKey}
+     * method variants call this method.
      *
      * <p>
      * This method constructs a {@link SecretKey} instance and an
@@ -158,34 +179,73 @@ public class AESCipher extends CodecCipher
      *
      * @param key
      *         Secret key. If {@code null} is given, {@code new byte[16]}
-     *         is used. If the length is less than 16, a byte array of
-     *         size 16 is allocated and the content of {@code key} is
-     *         copied to the newly allocated byte array, and the resultant
-     *         byte array is used. Even if the length is greater than 16,
-     *         only the first 16 bytes are used to construct a
-     *         {@code SecretKey} instance.
+     *         is used. If not {@code null} and the length is less than 16,
+     *         a byte array of size 16 is allocated and the content of
+     *         {@code key} is copied to the newly allocated byte array,
+     *         and the resultant byte array is used. Even if the length is
+     *         greater than 16, only the first 16 bytes are used to construct
+     *         a {@code SecretKey} instance.
      *
      * @param iv
-     *         Initial vector. If {@code null} is given, {@code new byte[16]}
-     *         is used. If the length is less than 16, a byte array of
-     *         size 16 is allocated and the content of {@code iv} is
-     *         copied to the newly allocated byte array, and the resultant
-     *         byte array is used. Even if the length is greater than 16,
-     *         only the first 16 bytes are used to construct an
-     *         {@code IvParameterSpec} instance.
+     *         Initial vector. If {@code null} is given, {@code null}
+     *         is used, meaning that {@code IvParameterSepc} argument
+     *         passed to {@link #setKey(SecretKey, IvParameterSpec)} is
+     *         {@code null}. In that case, you will want to obtain the
+     *         auto-generated initial vector by calling {@link #getCipher()
+     *         getCipher()}{@code .}{@link javax.crypto.Cipher#getIV()
+     *         getIV()} in order to decrypt the encrypted data.
+     *
+     *         <p>
+     *         If {@code iv} is not {@code null} and the length is less
+     *         than 16, a byte array of size 16 is allocated and the content
+     *         of {@code iv} is copied to the newly allocated byte array,
+     *         and the resultant byte array is used. Even if the length is
+     *         greater than 16, only the first 16 bytes are used to construct
+     *         an {@code IvParameterSpec} instance.
+     *         </p>
      *
      * @return
      *         {@code this} object.
      */
     public AESCipher setKey(byte[] key, byte[] iv)
     {
-        byte[] key2 = ensureSize(key, 16);
-        byte[] iv2  = ensureSize(iv,  16);
+        SecretKey secretKey  = Utils.createSecretKeySpec(key, getAlgorithm(), 16);
+        IvParameterSpec spec = null;
 
-        SecretKey secretKey  = new SecretKeySpec(key2, 0, 16, getAlgorithm());
-        IvParameterSpec spec = new IvParameterSpec(iv2, 0, 16);
+        if (iv != null)
+        {
+            spec = Utils.createIvParameterSpec(iv, 16);
+        }
 
         return setKey(secretKey, spec);
+    }
+
+
+    /**
+     * Set cipher initialization parameters.
+     *
+     * @param key
+     *         Secret key. The value is converted to a byte array
+     *         by {@code key.getBytes("UTF-8")} and used as the
+     *         first argument of {@link #setKey(byte[], byte[])}.
+     *         If {@code null} is given, {@code null} is passed
+     *         to {@link #setKey(byte[], byte[])}.
+     *
+     * @param iv
+     *         Initial vector. The value is pass to {@link
+     *         #setKey(byte[], byte[])} as the second argument
+     *         as is.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.2
+     */
+    public AESCipher setKey(String key, byte[] iv)
+    {
+        byte[] key2 = Utils.getBytesUTF8(key);
+
+        return setKey(key2, iv);
     }
 
 
@@ -211,8 +271,8 @@ public class AESCipher extends CodecCipher
      */
     public AESCipher setKey(String key, String iv)
     {
-        byte[] key2 = getBytesUTF8(key);
-        byte[] iv2  = getBytesUTF8(iv);
+        byte[] key2 = Utils.getBytesUTF8(key);
+        byte[] iv2  = Utils.getBytesUTF8(iv);
 
         return setKey(key2, iv2);
     }
@@ -222,7 +282,8 @@ public class AESCipher extends CodecCipher
      * Set cipher initialization parameters.
      *
      * <p>
-     * This method is an alias of {@link #setKey(String, String) setKey(key, null)}.
+     * This method is an alias of {@link #setKey(String, byte[])
+     * setKey(key, (byte[])null)}.
      * </p>
      *
      * @param key
@@ -233,26 +294,54 @@ public class AESCipher extends CodecCipher
      */
     public AESCipher setKey(String key)
     {
-        return setKey(key, null);
+        return setKey(key, (byte[])null);
     }
 
 
-    private static byte[] ensureSize(byte[] key, int size)
+    /**
+     * Set cipher initialization parameters.
+     *
+     * @param key
+     *         Secret key.
+     *
+     * @param iv
+     *         Initial vector. The value is converted to a byte array
+     *         by {@code iv.getBytes("UTF-8")} and used as the
+     *         second argument of {@link #setKey(byte[], byte[])}.
+     *         If {@code null} is given, {@code null} is passed
+     *         to {@link #setKey(byte[], byte[])}.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.2
+     */
+    public AESCipher setKey(byte[] key, String iv)
     {
-        if (key == null)
-        {
-            return new byte[size];
-        }
+        byte[] iv2 = Utils.getBytesUTF8(iv);
 
-        if (size <= key.length)
-        {
-            return key;
-        }
+        return setKey(key, iv2);
+    }
 
-        byte[] key2 = new byte[size];
 
-        System.arraycopy(key, 0, key2, 0, key.length);
-
-        return key2;
+    /**
+     * Set cipher initialization parameters.
+     *
+     * <p>
+     * This method is an alias of {@link #setKey(byte[], byte[])
+     * setKey(key, (byte[])null)}.
+     * </p>
+     *
+     * @param key
+     *         Secret key.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.2
+     */
+    public AESCipher setKey(byte[] key)
+    {
+        return setKey(key, (byte[])null);
     }
 }
