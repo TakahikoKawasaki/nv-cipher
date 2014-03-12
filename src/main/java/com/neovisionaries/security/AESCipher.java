@@ -180,16 +180,7 @@ public class AESCipher extends CodecCipher
     public AESCipher setKey(byte[] key, byte[] iv)
     {
         byte[] key2 = ensureSize(key, 16);
-        byte[] iv2;
-
-        if (key == iv)
-        {
-            iv2 = key2;
-        }
-        else
-        {
-            iv2 = ensureSize(iv, 16);
-        }
+        byte[] iv2  = ensureSize(iv,  16);
 
         SecretKey secretKey  = new SecretKeySpec(key2, 0, 16, getAlgorithm());
         IvParameterSpec spec = new IvParameterSpec(iv2, 0, 16);
@@ -221,16 +212,7 @@ public class AESCipher extends CodecCipher
     public AESCipher setKey(String key, String iv)
     {
         byte[] key2 = getBytesUTF8(key);
-        byte[] iv2;
-
-        if (key == iv)
-        {
-            iv2 = key2;
-        }
-        else
-        {
-            iv2 = getBytesUTF8(key);
-        }
+        byte[] iv2  = getBytesUTF8(iv);
 
         return setKey(key2, iv2);
     }
@@ -240,18 +222,18 @@ public class AESCipher extends CodecCipher
      * Set cipher initialization parameters.
      *
      * <p>
-     * This method is an alias of {@link #setKey(String, String) setKey(key, key)}.
+     * This method is an alias of {@link #setKey(String, String) setKey(key, null)}.
      * </p>
      *
      * @param key
-     *         Secret key. This is used as initial vector, too.
+     *         Secret key.
      *
      * @return
      *         {@code this} object.
      */
     public AESCipher setKey(String key)
     {
-        return setKey(key, key);
+        return setKey(key, null);
     }
 
 
