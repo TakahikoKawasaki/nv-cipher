@@ -1,6 +1,35 @@
+/*
+ * Copyright (C) 2014 Neo Visionaries Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.neovisionaries.security;
 
 
+/**
+ * List of standard cipher transformations which are valid as
+ * arguments for {@link javax.crypto.Cipher#getInstance(String)}.
+ *
+ * <p>
+ * The list here is a copy from Java SE 7 JavaDoc. Therefore,
+ * they may not be supported in older Java SE environments.
+ * </p>
+ *
+ * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/crypto/Cipher.html"
+ *      >javax.crypto.Cipher</a>
+ *
+ * @author Takahiko Kawasaki
+ */
 public class StandardCipherTransformations
 {
     /**
