@@ -98,6 +98,22 @@ public class AESCipher extends CodecCipher
 
 
     /**
+     * Constructor.
+     *
+     * <p>
+     * This constructor just performs {@link CodecCipher#CodecCipher(String)
+     * super(transformation)}.
+     * </p>
+     *
+     * @since 1.3
+     */
+    public AESCipher(String transformation)
+    {
+        super(transformation);
+    }
+
+
+    /**
      * Constructor with an encoder and a decoder.
      *
      * <p>
@@ -124,6 +140,34 @@ public class AESCipher extends CodecCipher
 
 
     /**
+     * Constructor with a transformation, an encoder and a decoder.
+     *
+     * <p>
+     * This constructor just performs {@link CodecCipher#CodecCipher(String,
+     * BinaryEncoder, BinaryDecoder) super(transformation, encoder, decoder)}.
+     * </p>
+     *
+     * @param encoder
+     *         An encoder used in {@link #encrypt(String) encrypt(String)} and
+     *         {@link #encrypt(byte[]) encrypt(byte[])} to encode an encrypted byte array.
+     *         If {@code null} is given, {@link Base64} is used as the default
+     *         encoder.
+     *
+     * @param decoder
+     *         A decoder used in {@link #decrypt(String) decrypt(String)} and
+     *         {@link #decrypt(byte[]) decrypt(byte[])} to decode an encoded input byte array.
+     *         If {@code null} is given, {@link Base64} is used as the default
+     *         decoder.
+     *
+     * @since 1.3
+     */
+    public AESCipher(String transformation, BinaryEncoder encoder, BinaryDecoder decoder)
+    {
+        super(transformation, encoder, decoder);
+    }
+
+
+    /**
      * Constructor with a coder.
      *
      * <p>
@@ -138,6 +182,26 @@ public class AESCipher extends CodecCipher
     public <TCoder extends BinaryEncoder & BinaryDecoder> AESCipher(TCoder coder)
     {
         super(TRANSFORMATION, coder);
+    }
+
+
+    /**
+     * Constructor with a transformation and a coder.
+     *
+     * <p>
+     * This constructor just performs {@code super(transformation, coder)}.
+     * </p>
+     *
+     * @param coder
+     *         A coder which works as both an encoder and a decoder.
+     *         If {@code null} is given, {@link Base64} is used as the
+     *         default coder.
+     *
+     * @since 1.3
+     */
+    public <TCoder extends BinaryEncoder & BinaryDecoder> AESCipher(String transformation, TCoder coder)
+    {
+        super(transformation, coder);
     }
 
 
