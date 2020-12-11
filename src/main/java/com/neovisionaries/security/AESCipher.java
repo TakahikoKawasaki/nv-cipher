@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Neo Visionaries Inc.
+ * Copyright (C) 2014-2020 Neo Visionaries Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,28 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class AESCipher extends CodecCipher
 {
-    private static final String TRANSFORMATION = AES_CBC_PKCS5PADDING;
+    /**
+     * The default key size. The value is 16, meaning 128 bits.
+     *
+     * @since 1.4
+     */
+    public static final int DEFAULT_KEY_SIZE = 16;
+
+
+    /**
+     * The default transformation. The value is "AES/CBC/PKCS5Padding".
+     *
+     * @since 1.4
+     */
+    public static final String DEFAULT_TRANSFORMATION = AES_CBC_PKCS5PADDING;
+
+
+    /**
+     * The initial vector. The size of initial vectors for AES is always 16.
+     *
+     * @since 1.4
+     */
+    private static final int INITIAL_VECTOR_SIZE = 16;
 
 
     /**
@@ -93,7 +114,7 @@ public class AESCipher extends CodecCipher
      */
     public AESCipher()
     {
-        super(TRANSFORMATION);
+        super(DEFAULT_TRANSFORMATION);
     }
 
 
@@ -135,7 +156,7 @@ public class AESCipher extends CodecCipher
      */
     public AESCipher(BinaryEncoder encoder, BinaryDecoder decoder)
     {
-        super(TRANSFORMATION, encoder, decoder);
+        super(DEFAULT_TRANSFORMATION, encoder, decoder);
     }
 
 
@@ -181,7 +202,7 @@ public class AESCipher extends CodecCipher
      */
     public <TCoder extends BinaryEncoder & BinaryDecoder> AESCipher(TCoder coder)
     {
-        super(TRANSFORMATION, coder);
+        super(DEFAULT_TRANSFORMATION, coder);
     }
 
 
@@ -232,8 +253,32 @@ public class AESCipher extends CodecCipher
 
 
     /**
+     * Set cipher initialization parameters.
+     *
+     * <p>
+     * This method is an alias of {@link #setKey(byte[], byte[], int)
+     * setKey}<code>(key, iv, {@link #DEFAULT_KEY_SIZE})</code>.
+     * </p>
+     *
+     * @param key
+     *         Secret key.
+     *
+     * @param iv
+     *         Initial vector.
+     *
+     * @return
+     *         {@code this} object.
+     */
+    public AESCipher setKey(byte[] key, byte[] iv)
+    {
+        return setKey(key, iv, DEFAULT_KEY_SIZE);
+    }
+
+
+    /**
      * Set cipher initialization parameters. Other {@code setKey}
-     * method variants call this method.
+     * method variants except {@link #setKey(SecretKey, IvParameterSpec)}
+     * eventually call this method.
      *
      * <p>
      * This method constructs a {@link SecretKey} instance and an
@@ -246,9 +291,7 @@ public class AESCipher extends CodecCipher
      *         is used. If not {@code null} and the length is less than 16,
      *         a byte array of size 16 is allocated and the content of
      *         {@code key} is copied to the newly allocated byte array,
-     *         and the resultant byte array is used. Even if the length is
-     *         greater than 16, only the first 16 bytes are used to construct
-     *         a {@code SecretKey} instance.
+     *         and the resultant byte array is used.
      *
      * @param iv
      *         Initial vector. If {@code null} is given, {@code null}
@@ -268,17 +311,22 @@ public class AESCipher extends CodecCipher
      *         an {@code IvParameterSpec} instance.
      *         </p>
      *
+     * @param keySize
+     *         The size of the secret key in bytes.
+     *
      * @return
      *         {@code this} object.
+     *
+     * @since 1.4
      */
-    public AESCipher setKey(byte[] key, byte[] iv)
+    public AESCipher setKey(byte[] key, byte[] iv, int keySize)
     {
-        SecretKey secretKey  = Utils.createSecretKeySpec(key, getAlgorithm(), 16);
+        SecretKey secretKey  = Utils.createSecretKeySpec(key, getAlgorithm(), keySize);
         IvParameterSpec spec = null;
 
         if (iv != null)
         {
-            spec = Utils.createIvParameterSpec(iv, 16);
+            spec = Utils.createIvParameterSpec(iv, INITIAL_VECTOR_SIZE);
         }
 
         return setKey(secretKey, spec);
@@ -288,17 +336,16 @@ public class AESCipher extends CodecCipher
     /**
      * Set cipher initialization parameters.
      *
+     * <p>
+     * This method is an alias of {@link #setKey(String, byte[], int)
+     * setKey}<code>(key, iv, {@link #DEFAULT_KEY_SIZE})</code>.
+     * </p>
+     *
      * @param key
-     *         Secret key. The value is converted to a byte array
-     *         by {@code key.getBytes("UTF-8")} and used as the
-     *         first argument of {@link #setKey(byte[], byte[])}.
-     *         If {@code null} is given, {@code null} is passed
-     *         to {@link #setKey(byte[], byte[])}.
+     *         Secret key.
      *
      * @param iv
-     *         Initial vector. The value is pass to {@link
-     *         #setKey(byte[], byte[])} as the second argument
-     *         as is.
+     *         Initial vector.
      *
      * @return
      *         {@code this} object.
@@ -307,38 +354,7 @@ public class AESCipher extends CodecCipher
      */
     public AESCipher setKey(String key, byte[] iv)
     {
-        byte[] key2 = Utils.getBytesUTF8(key);
-
-        return setKey(key2, iv);
-    }
-
-
-    /**
-     * Set cipher initialization parameters.
-     *
-     * @param key
-     *         Secret key. The value is converted to a byte array
-     *         by {@code key.getBytes("UTF-8")} and used as the
-     *         first argument of {@link #setKey(byte[], byte[])}.
-     *         If {@code null} is given, {@code null} is passed
-     *         to {@link #setKey(byte[], byte[])}.
-     *
-     * @param iv
-     *         Initial vector. The value is converted to a byte array
-     *         by {@code iv.getBytes("UTF-8")} and used as the
-     *         second argument of {@link #setKey(byte[], byte[])}.
-     *         If {@code null} is given, {@code null} is passed
-     *         to {@link #setKey(byte[], byte[])}.
-     *
-     * @return
-     *         {@code this} object.
-     */
-    public AESCipher setKey(String key, String iv)
-    {
-        byte[] key2 = Utils.getBytesUTF8(key);
-        byte[] iv2  = Utils.getBytesUTF8(iv);
-
-        return setKey(key2, iv2);
+        return setKey(key, iv, DEFAULT_KEY_SIZE);
     }
 
 
@@ -346,8 +362,96 @@ public class AESCipher extends CodecCipher
      * Set cipher initialization parameters.
      *
      * <p>
-     * This method is an alias of {@link #setKey(String, byte[])
-     * setKey(key, (byte[])null)}.
+     * This method is an alias of {@link #setKey(byte[], byte[], int)}.
+     * </p>
+     *
+     * @param key
+     *         Secret key. The value is converted to a byte array
+     *         by {@code key.getBytes("UTF-8")} and used as the
+     *         first argument of {@link #setKey(byte[], byte[], int)}.
+     *
+     * @param iv
+     *         Initial vector.
+     *
+     * @param keySize
+     *         The size of the secret key in bytes.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public AESCipher setKey(String key, byte[] iv, int keySize)
+    {
+        byte[] key2 = Utils.getBytesUTF8(key);
+
+        return setKey(key2, iv, keySize);
+    }
+
+
+    /**
+     * Set cipher initialization parameters.
+     *
+     * <p>
+     * This method is an alias of {@link #setKey(String, String, int)
+     * setKey}<code>(key, iv, {@link #DEFAULT_KEY_SIZE})</code>.
+     * </p>
+     *
+     * @param key
+     *         Secret key.
+     *
+     * @param iv
+     *         Initial vector.
+     *
+     * @return
+     *         {@code this} object.
+     */
+    public AESCipher setKey(String key, String iv)
+    {
+        return setKey(key, iv, DEFAULT_KEY_SIZE);
+    }
+
+
+    /**
+     * Set cipher initialization parameters.
+     *
+     * <p>
+     * This method is an alias of {@link #setKey(byte[], byte[], int)}.
+     * </p>
+     *
+     * @param key
+     *         Secret key. The value is converted to a byte array
+     *         by {@code key.getBytes("UTF-8")} and used as the
+     *         first argument of {@link #setKey(byte[], byte[], int)}.
+     *
+     * @param iv
+     *         Initial vector. The value is converted to a byte array
+     *         by {@code iv.getBytes("UTF-8")} and used as the
+     *         second argument of {@link #setKey(byte[], byte[], int)}.
+     *
+     * @param keySize
+     *         The size of the secret key in bytes.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public AESCipher setKey(String key, String iv, int keySize)
+    {
+        byte[] key2 = Utils.getBytesUTF8(key);
+        byte[] iv2  = Utils.getBytesUTF8(iv);
+
+        return setKey(key2, iv2, keySize);
+    }
+
+
+    /**
+     * Set cipher initialization parameters.
+     *
+     * <p>
+     * This method is an alias of {@link #setKey(String, int)
+     * setKey}<code>(key, {@link #DEFAULT_KEY_SIZE})</code>
      * </p>
      *
      * @param key
@@ -358,22 +462,51 @@ public class AESCipher extends CodecCipher
      */
     public AESCipher setKey(String key)
     {
-        return setKey(key, (byte[])null);
+        return setKey(key, DEFAULT_KEY_SIZE);
     }
 
 
     /**
      * Set cipher initialization parameters.
      *
+     * <p>
+     * This method is an alias of {@link #setKey(byte[], byte[], int)}.
+     * </p>
+     *
+     * @param key
+     *         Secret key. The value is converted to a byte array
+     *         by {@code key.getBytes("UTF-8")} and used as the
+     *         first argument of {@link #setKey(byte[], byte[], int)}.
+     *
+     * @param keySize
+     *         The size of the secret key in bytes.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public AESCipher setKey(String key, int keySize)
+    {
+        byte[] key2 = Utils.getBytesUTF8(key);
+
+        return setKey(key2, (byte[])null, keySize);
+    }
+
+
+    /**
+     * Set cipher initialization parameters.
+     *
+     * <p>
+     * This method is an alias of {@link #setKey(byte[], String, int)
+     * setKey}<code>(key, iv, {@link #DEFAULT_KEY_SIZE})</code>.
+     * </p>
+     *
      * @param key
      *         Secret key.
      *
      * @param iv
-     *         Initial vector. The value is converted to a byte array
-     *         by {@code iv.getBytes("UTF-8")} and used as the
-     *         second argument of {@link #setKey(byte[], byte[])}.
-     *         If {@code null} is given, {@code null} is passed
-     *         to {@link #setKey(byte[], byte[])}.
+     *         Initial vector.
      *
      * @return
      *         {@code this} object.
@@ -382,9 +515,7 @@ public class AESCipher extends CodecCipher
      */
     public AESCipher setKey(byte[] key, String iv)
     {
-        byte[] iv2 = Utils.getBytesUTF8(iv);
-
-        return setKey(key, iv2);
+        return setKey(key, iv, DEFAULT_KEY_SIZE);
     }
 
 
@@ -392,8 +523,39 @@ public class AESCipher extends CodecCipher
      * Set cipher initialization parameters.
      *
      * <p>
-     * This method is an alias of {@link #setKey(byte[], byte[])
-     * setKey(key, (byte[])null)}.
+     * This method is an alias of {@link #setKey(byte[], byte[], int)}.
+     * </p>
+     *
+     * @param key
+     *         Secret key.
+     *
+     * @param iv
+     *         Initial vector. The value is converted to a byte array
+     *         by {@code iv.getBytes("UTF-8")} and used as the
+     *         second argument of {@link #setKey(byte[], byte[], int)}.
+     *
+     * @param keySize
+     *         The size of the secret key in bytes.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public AESCipher setKey(byte[] key, String iv, int keySize)
+    {
+        byte[] iv2 = Utils.getBytesUTF8(iv);
+
+        return setKey(key, iv2, keySize);
+    }
+
+
+    /**
+     * Set cipher initialization parameters.
+     *
+     * <p>
+     * This method is an alias of {@link #setKey(byte[], int)
+     * setKey}<code>(key, {@link #DEFAULT_KEY_SIZE})</code>.
      * </p>
      *
      * @param key
@@ -406,6 +568,31 @@ public class AESCipher extends CodecCipher
      */
     public AESCipher setKey(byte[] key)
     {
-        return setKey(key, (byte[])null);
+        return setKey(key, DEFAULT_KEY_SIZE);
+    }
+
+
+    /**
+     * Set cipher initialization parameters.
+     *
+     * <p>
+     * This method is an alias of {@link #setKey(byte[], byte[], int)
+     * setKey}<code>(key, (byte[])null, keySize)</code>.
+     * </p>
+     *
+     * @param key
+     *         Secret key.
+     *
+     * @param keySize
+     *         The size of the secret key in bytes.
+     *
+     * @return
+     *         {@code this} object.
+     *
+     * @since 1.4
+     */
+    public AESCipher setKey(byte[] key, int keySize)
+    {
+        return setKey(key, (byte[])null, keySize);
     }
 }

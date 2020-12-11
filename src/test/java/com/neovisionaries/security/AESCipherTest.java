@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Neo Visionaries Inc.
+ * Copyright (C) 2014-2020 Neo Visionaries Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.BinaryCodec;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.apache.commons.codec.net.URLCodec;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -39,6 +40,12 @@ public class AESCipherTest
 
     private <TCoder extends BinaryEncoder & BinaryDecoder> void doTest(String plain, String key, String iv, TCoder coder)
     {
+        doTest(plain, key, iv, AESCipher.DEFAULT_KEY_SIZE, coder);
+    }
+
+
+    private <TCoder extends BinaryEncoder & BinaryDecoder> void doTest(String plain, String key, String iv, int keySize, TCoder coder)
+    {
         AESCipher cipher = new AESCipher();
 
         if (coder != null)
@@ -46,7 +53,7 @@ public class AESCipherTest
             cipher.setCoder(coder);
         }
 
-        cipher.setKey(key, iv);
+        cipher.setKey(key, iv, keySize);
 
         // Encrypt.
         String encrypted = cipher.encrypt(plain);
@@ -120,5 +127,13 @@ public class AESCipherTest
     public void test7()
     {
         doTest("hello", null, null, null);
+    }
+
+
+    @Ignore("This fails if JVM does not support 256-bit key size for AES.")
+    @Test
+    public void test8()
+    {
+        doTest("hello", "0123456789ABCDEF0123456789ABCDEF", "0123456789ABCDEF", 32, null);
     }
 }
