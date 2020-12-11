@@ -8,8 +8,7 @@ Cipher with encoder/decoder. BinaryEncoder and BinaryDecoder
 of [Apache Commons Codec](http://commons.apache.org/proper/commons-codec/)
 such as Base64, Hex and BinaryCodec can be used.
 
-As a subclass of CodecCipher, AESCipher is contained
-which is dedicated to "AES/CBC/PKCS5Padding".
+As a subclass of CodecCipher, AESCipher is contained which is dedicated to AES.
 
 
 License
@@ -69,7 +68,7 @@ Maven
 <dependency>
     <groupId>com.neovisionaries</groupId>
     <artifactId>nv-cipher</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
 </dependency>
 ```
 
@@ -84,4 +83,5 @@ See Also
 Author
 ------
 
-Takahiko Kawasaki, Neo Visionaries Inc.
+Takahiko Kawasaki @ Authlete, Inc.
+

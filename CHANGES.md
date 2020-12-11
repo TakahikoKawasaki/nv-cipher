@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+1.4 (2020-12-11)
+----------------
+
 - `AESCipher` class
     * Added `DEFAULT_KEY_SIZE` class variable.
     * Added `DEFAULT_TRANSFORMATION` class variable.
