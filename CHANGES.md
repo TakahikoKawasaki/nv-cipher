@@ -10,3 +10,6 @@ CHANGES
     * Added `setKey(String key, int keySize)` method.
     * Added `setKey(byte[] key, String iv, int keySize)` method.
     * Added `setKey(byte[] key, int keySize)` method.
+
+- `pom.xml`
+    * Changed `source` and `target` versions of Java from 1.5 to 8.
